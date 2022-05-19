@@ -2,8 +2,7 @@
 import React, {useEffect, useState} from "react"
 import styled from "styled-components"
 import DateTime from "./DateTime";
-import Calendar from "react-calendar";
-import 'react-calendar/dist/Calendar.css';
+import Calendar from "./Calendar";
 
 const Container = styled.div`
   display: flex;
@@ -50,11 +49,46 @@ const EmptySpace = styled.div`
 
 
 const DatePicker = () => {
-  const [months, setMonths] = useState([]);
-  const [dates, setDates] = useState([]);
+  const [day, setDay] = useState(new Date());
+  const [days, setDays] = useState([]);
 
   useEffect(() => {
-  }, []);
+    const firstDay = new Date(day.getFullYear(), day.getMonth());
+    const beforeDay = new Date(firstDay);
+    const lastDay = new Date(day.getFullYear(), day.getMonth() + 1, 0);
+    const afterDay = new Date(lastDay);
+    const numberOfDays = lastDay.getDate();
+    
+    let allDays = [];
+
+    // Retrieve the days before
+    for (let i = 0; i < firstDay.getDay(); i++) {
+      beforeDay.setDate(beforeDay.getDate() - 1)
+      allDays = [{
+        date: new Date(beforeDay)
+      }, ...allDays]
+    }
+
+
+    // Retrieve the days of the current month
+    for (let i = 1; i <= numberOfDays; i++) {
+      allDays = [...allDays, {
+        date: new Date(firstDay),
+        isCurrentMonth: true
+      }];
+      firstDay.setDate(firstDay.getDate() + 1)
+    }
+
+    // Retrieve the days after
+    for (let i = 0; i < 6 - lastDay.getDay(); i++) {
+      afterDay.setDate(afterDay.getDate() + 1)
+      allDays = [...allDays, {
+        date: new Date(afterDay)
+      }];
+    }
+
+    setDays(allDays)
+  }, [day]);
 
   return (
     <Container>
@@ -63,12 +97,12 @@ const DatePicker = () => {
       </Row>
       <Row>
         <Column>
-          <DateTime flex={2} text="Date" value="09/04/2018"/>
+          <DateTime flex={2} text="Date" value={day.toLocaleDateString()}/>
           <DateTime text="Time" value="03:00 AM"/>
         </Column>
       </Row>
       <Row>
-        <Calendar/>
+        <Calendar days={days} focusedDay={day}/>
       </Row>
       <Row>
         <Column>
